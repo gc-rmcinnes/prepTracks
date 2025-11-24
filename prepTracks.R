@@ -44,7 +44,7 @@ defineModule(sim, list(
     createsOutput(objectName = "distparams", objectClass = "list",
                   desc = "A list of parameters from a fitted distribution"),
     createsOutput(objectName = "buffer", objectClass = "numeric",
-                  desc = "A buffer value for the step length")
+                  desc = "Buffer for moving windows")
 
   )
 ))

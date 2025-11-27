@@ -2,7 +2,7 @@
 #' @export
 #' @author Julie W. Turner
 #'
-resample_tracks <- function(tracks, rate, tolerance, probsfilter) {
+resample_tracks <- function(tracks, rate, tolerance, probsfilter, longlat) {
   t <- track_resample(tracks, rate = rate, tolerance = tolerance) %>%
     filter_min_n_burst()
 

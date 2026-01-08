@@ -3,15 +3,17 @@ defineModule(sim, list(
   description = "A targets pipeline to prepare tracks derived from location data",
   keywords = "",
   authors = c(person("Julie", "Tuner", email = "", role = c("aut", "cre")),
-              person("Rory", "McInnes", email = "", role = c("aut", "cre"))),
+              person("Rory", "McInnes", email = "", role = c("aut", "cre")),
+              person("Micheletti", "Tati", email = "tati.micheletti@gmail.com", role = "aut")
+              ),
   childModules = character(0),
   version = list(prepTracks = "0.0.0.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("NEWS.md", "README.md", "prepTracks.Rmd"),
-  reqdPkgs = list("SpaDES.core (>= 2.1.5.9003)", "ggplot2", "targets", "tarchetypes", "amt", "data.table",
-                  "terra", "sf", "sp", "ggplot2", 'plyr', "distanceto", "glmmTMB", "dtplyr", "glue"),
+  reqdPkgs = list("SpaDES.core (>= 2.1.5.9003)", "ggplot2", "amt", "data.table","fastdigest",
+                  "terra", "sf", "sp", "ggplot2", 'plyr', "distanceto", "glmmTMB", "dtplyr", "glue"), #"targets", "tarchetypes", 
   parameters = bindrows(
     #defineParameter("paramName", "paramClass", value, min, max, "parameter description"),
     defineParameter(".plots", "character", "screen", NA, NA,
@@ -35,7 +37,9 @@ defineModule(sim, list(
     defineParameter("crs", "character", st_crs(3978)$wkt, NA, NA,
                     "CRS to be used for the GPS points"),
     defineParameter("interval", "numeric", 5, NA, NA,
-                    "ADD DESCRIPTION"),
+                    paste0("What is the difference in time between non-annual layers?",
+                           "For ECCC disturbance, for example, we have layers every 5 years",
+                           ", the default.")),
     defineParameter("sl.interval", "numeric", 50, NA, NA,
                     "ADD DESCRIPTION"),
     defineParameter("minyr", "numeric", 2010, NA, NA,
@@ -47,7 +51,12 @@ defineModule(sim, list(
     defineParameter("tolerance", "numeric", minutes(150), NA, NA,
                     "ADD DESCRIPTION"),
     defineParameter("probsfilter", "numeric", 0.95, NA, NA,
-                    "Probability filter for anormal steps")
+                    "Probability filter for anormal steps"),
+    defineParameter("aggrNonAnnualData", "character", "sequencePre", NA, NA,
+                    paste0("How to aggregate non-annual layers?",
+                           "'sequencePre' uses the years preceeding the layer year (that included)",
+                           "'sequencePos' uses the years after the layer year (that included)",
+                           "'middle' places the layer year in the middle (that included)"))
   ),
   inputObjects = bindrows(
     expectsInput(objectName = "caribouLoc", objectClass = "data.table",
@@ -61,7 +70,6 @@ defineModule(sim, list(
                   desc = "A list of parameters from a fitted distribution"),
     createsOutput(objectName = "buffer", objectClass = "numeric",
                   desc = "A buffer value for the step length")
-
   )
 ))
 
@@ -78,15 +86,19 @@ doEvent.prepTracks = function(sim, eventTime, eventType) {
       if (is.null(sim$caribouLoc)){
         stop("The object caribouLoc is NULL. Please debug.")
       }
-      tracksReady <- prepareTracks(crs = P(sim)$crs,
-                                   interval = P(sim)$interval, 
-                                   sl.interval = P(sim)$sl.interval, 
-                                   minyr = P(sim)$minyr, 
-                                   maxyr = P(sim)$maxyr,
-                                   rate = P(sim)$rate,
-                                   tolerance = P(sim)$tolerance,
-                                   locations = sim$caribouLoc,
-                                   probsfilter = P(sim)$probsfilter)
+      locationsHash <- fastdigest::fastdigest(sim$caribouLoc)
+      tracksReady <- Cache(prepareTracks, crs = P(sim)$crs,
+                           interval = P(sim)$interval, 
+                           sl.interval = P(sim)$sl.interval, 
+                           minyr = P(sim)$minyr, 
+                           maxyr = P(sim)$maxyr, 
+                           rate = P(sim)$rate, 
+                           tolerance = P(sim)$tolerance, 
+                           locations = sim$caribouLoc, 
+                           probsfilter = P(sim)$probsfilter,
+                           locationsHash = locationsHash,
+                           aggrNonAnnualData = P(sim)$aggrNonAnnualData,
+                           omitArgs = "locations")
       
       sim$tracks <- tracksReady$tracks
       sim$distparams <- tracksReady$distparams

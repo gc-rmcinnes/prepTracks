@@ -125,7 +125,7 @@ prepareTracks <- function(sim){
 
       tar_target(
         ta_distr,
-        fit_distr(resamples$ta_, "vonmises")
+        fit_distr(resamples$ta_[!is.na(resamples$ta_)], "vonmises")
       ),
       tar_target(
         randsteps,

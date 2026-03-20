@@ -31,7 +31,9 @@ defineModule(sim, list(
     defineParameter(".seed", "list", list(), NA, NA,
                     "Named list of seeds to use for each event (names)."),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
-                    "Should caching of events or module be used?")
+                    "Should caching of events or module be used?"),
+    defineParameter("outputFolderID", "character", "https://drive.google.com/drive/folders/1CRSY_tJucL3E8VDgUYEv9WXuG1nKImH3", NA, NA,
+                    "Google Drive folder ID for workflow outputs")
   ),
   inputObjects = bindrows(
     expectsInput(objectName = "caribouLoc", objectClass = "data.table",
@@ -56,6 +58,7 @@ doEvent.prepTracks = function(sim, eventTime, eventType) {
 
       # run the targets pipeline that generates the tracks
       sim <- scheduleEvent(sim, time(sim), "prepTracks", "preparingTracks")
+      sim <- scheduleEvent(sim, time(sim), "prepTracks", "save")
 
     },
     preparingTracks = {
@@ -65,6 +68,42 @@ doEvent.prepTracks = function(sim, eventTime, eventType) {
       # run the targets pipeline script
       tracksReady <- prepareTracks(sim)
 
+    },
+
+    save = {
+      message("Saving distparams to workflowOutputs on Google Drive")
+
+      if (!requireNamespace("googledrive", quietly = TRUE)) {
+        stop("Package 'googledrive' is required for this event.")
+      }
+
+      folder_id <- Par$outputFolderID
+
+      if (is.na(folder_id)) {
+        stop("outputFolderID parameter must be supplied")
+      }
+
+      output_folder <- googledrive::as_id(folder_id)
+
+      tmp_file <- tempfile(fileext = ".rds")
+
+      # Save distparams
+      distparams <- sim$distparams
+
+      saveRDS(distparams, tmp_file)
+
+      message("Uploading distparams")
+
+      googledrive::drive_upload(
+        media = tmp_file,
+        path = output_folder,
+        name = "distparams.rds",
+        overwrite = TRUE
+      )
+
+      unlink(tmp_file)
+
+      message("Upload complete → caribouWorkflow/workflowOutputs")
     },
     warning(noEventWarning(sim))
   )

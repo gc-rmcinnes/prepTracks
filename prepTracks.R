@@ -3,7 +3,7 @@ defineModule(sim, list(
   description = "A targets pipeline to prepare tracks derived from location data",
   keywords = "",
   authors = c(person("Julie", "Tuner", email = "", role = c("aut", "cre")),
-              person("Rory", "McInnes", email = "", role = c("aut", "cre"))),
+              person("Rory", "McInnes", email = "rory_mcinnes@hotmail.com", role = c("aut", "cre"))),
   childModules = character(0),
   version = list(prepTracks = "0.0.0.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),

@@ -1,7 +1,7 @@
 defineModule(sim, list(
   name = "prepTracks",
   description = "A targets pipeline to prepare tracks derived from location data",
-  keywords = "",
+  keywords = c("Targets", "Random steps", "Movement Characteristics"),
   authors = c(person("Julie", "Tuner", email = "", role = c("aut", "cre")),
               person("Rory", "McInnes", email = "rory_mcinnes@hotmail.com", role = c("aut", "cre"))),
   childModules = character(0),
@@ -97,7 +97,7 @@ doEvent.prepTracks = function(sim, eventTime, eventType) {
       googledrive::drive_upload(
         media = tmp_file,
         path = output_folder,
-        name = "distparams.rds",
+        name = paste0("distparams", .studyAreaName, ".rds"),
         overwrite = TRUE
       )
 

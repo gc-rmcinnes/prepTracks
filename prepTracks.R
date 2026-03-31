@@ -97,7 +97,7 @@ doEvent.prepTracks = function(sim, eventTime, eventType) {
       googledrive::drive_upload(
         media = tmp_file,
         path = output_folder,
-        name = paste0("distparams", .studyAreaName, ".rds"),
+        name = paste0("distparams", Par$.studyAreaName, ".rds"),
         overwrite = TRUE
       )
 

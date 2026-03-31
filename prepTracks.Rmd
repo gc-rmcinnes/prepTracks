@@ -45,10 +45,8 @@ download.file(url = "https://img.shields.io/badge/Made%20with-Markdown-1f425f.pn
 
 ### Module summary
 
-Provide a brief summary of what the module does / how to use the module.
+Using a targets pipeline this module generates movement tracks from the harmonized data. A track is the sequence (steps) of an animal’s movement over time, using the GPS fixes that capture where the animal has been. From the steps in the tracks, we calculate the movement characteristics (e.g., step length and turning angles), fit statistical distributions to describe typical movement, and generate a set of 10 random alternative steps that the caribou may have taken.
 
-Module documentation should be written so that others can use your module.
-This is a template for module documentation, and should be changed to reflect your module.
 
 ### Module inputs and parameters
 
@@ -75,7 +73,7 @@ knitr::kable(df_params, caption = "List of (ref:targets-test) parameters and the
 
 ### Events
 
-Describe what happens for each event type.
+The main event in this module runs the targets pipeline script and outputs the tracks object
 
 ### Plotting
 
@@ -83,11 +81,15 @@ Write what is plotted.
 
 ### Saving
 
-Write what is saved.
+Distparams are saved as an rds file and uploaded to the google drive for use in later modules
 
 ### Module outputs
 
 Description of the module outputs (Table \@ref(tab:moduleOutputs-targets-test)).
+
+"tracks" is a data.table of the movement tracks with random steps generated in the targets pipeline
+"distparams" is the distributions parameters for the points provided
+"buffer" is the moving window size 
 
 ```{r moduleOutputs-targets-test, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_outputs <- SpaDES.core::moduleOutputs("targets_test", "C:/Users/rmcinnes/Documents/modules/targets_mod")
